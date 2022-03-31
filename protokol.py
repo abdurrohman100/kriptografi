@@ -76,10 +76,9 @@ class Chat:
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
-				key = j[4].strip()
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
-				return self.download_file_aes(sessionid, username, usernameto, filename,key)
+				return self.download_file_only(sessionid, username, usernameto, filename)
 			else:
 				return {'status': 'ERROR', 'message': '**Protocol Tidak Benar'}
 		except KeyError:

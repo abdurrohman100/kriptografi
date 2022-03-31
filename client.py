@@ -43,7 +43,7 @@ class ChatClient:
                 filename = j[2].strip()
                 key = j[3].strip()
                 return self.downloadfile_aes(username, filename, key)
-            elif (command=='download_only'):
+            elif (command=='download'):
                 username = j[1].strip()
                 filename = j[2].strip()
                 return self.downloadfileonly(username, filename)
@@ -122,7 +122,7 @@ class ChatClient:
             decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
             output_file.write(decrypted_buffer)
             output_file.close()
-            return {'status' : 'OK', 'message':'file {} downloaded' . format(filename)}
+            return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     
