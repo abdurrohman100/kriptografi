@@ -31,14 +31,14 @@ class AESCipher(object):
         if self.scratch :
             cipher = CBC(self.key, byte, iv)
             encrypted_byte = cipher.encrypt()
-            return iv + encrypted_byte
+            # return iv + encrypted_byte
         else :
             cipher = AES.new(self.key, AES.MODE_CBC, iv)
             # print
             # cipher = AES.new(self.key, AES.MODE_CBC)
             encrypted_byte = cipher.encrypt(byte)
-            return encrypted_byte
-        # return iv + encrypted_byte
+            # return encrypted_byte
+        return iv + encrypted_byte
 
     def decrypt(self, encrypted_text):
         encrypted_text = b64decode(encrypted_text)
