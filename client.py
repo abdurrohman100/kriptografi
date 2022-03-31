@@ -6,14 +6,16 @@ import json
 from DiffieHellman import DiffieHellman
 from aes import AESCipher
 
+# AESC = AESCipher("kijpakbas", True)
+
 diffieHelman = DiffieHellman()
 
-AESDict = {}
+# AESDict = {}
 
-TARGET_IP = "167.172.77.139"
+TARGET_IP = "127.0.0.1"
 TARGET_PORT = 8889
 
-cipher = AESCipher("ini key", True)
+# cipher = AESCipher("ini key", True)
 
 class ChatClient:
     def __init__(self):
@@ -31,24 +33,22 @@ class ChatClient:
                 password=j[2].strip()
                 response = self.login(username,password)
                 return response
-            elif (command=='send_file_aes'):
+            elif (command=='send_file'):
                 usernameto = j[1].strip()
                 filename = j[2].strip()
-                key = j[3].strip()
-                # return self.sendfile_aes(usernameto,filename,key)
-                return self.sendfile_aes2(usernameto,filename)
+                return self.sendfile(usernameto,filename)
             elif (command=='my_file'):
                 return self.myfile()
-            elif (command=='download_aes'):
+            elif (command=='download_file'):
                 username = j[1].strip()
                 filename = j[2].strip()
-                key = j[3].strip()
-                # return self.downloadfile_aes(username, filename, key)
-                return self.downloadfile_aes2(username, filename)
-            elif (command=='download'):
+                return self.downloadfile(username, filename)
+            elif (command=='sendkey'):
+                key = j[1].strip()
+                return self.sendkey(key)
+            elif (command=='getkey'):
                 username = j[1].strip()
-                filename = j[2].strip()
-                return self.downloadfileonly(username, filename)
+                return self.getkey(username)
             else:
                 return "*Maaf, command tidak benar"
         except IndexError:
@@ -68,7 +68,6 @@ class ChatClient:
         except:
             self.sock.close()
             return { 'status' : 'ERROR', 'message' : 'Gagal'}
-
     def login(self,username,password):
         string="auth {} {} \r\n" . format(username,password)
         result = self.sendstring(string)
@@ -79,54 +78,27 @@ class ChatClient:
             return { 'status' : 'OK', 'message' : 'Logged In', 'username':username, 'token':self.tokenid}
         else:
             return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
-
-    def sendfile_aes(self, usernameto, filename,key):
+    def sendfile(self, usernameto, filename):
         if(self.tokenid==""):
             return "Error, not authorized"
         try :
             file = open(filename, "rb")
         except FileNotFoundError :
             return "Error, {} file not found".format(filename)
+        cipher2 = AESCipher("ini key1", True) 
         buffer = file.read()
-        # key="12345678"
-        cipher2 = AESCipher(str(key), False)
         encrypted_buffer = cipher2.encrypt_byte(buffer)
-        encrypted_file = open(filename+".aes", "wb")
+        encrypted_file = open(filename+".enc", "wb")
         encrypted_file.write(encrypted_buffer)
         file.close()
         encrypted_file.close()
         buffer_string = base64.b64encode(encrypted_buffer).decode('utf-8')
-        message="send_file_aes {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename+".aes",key, buffer_string)
+        message="send_file {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename, buffer_string)
         result = self.sendstring(message)
         if result['status']=='OK':
             return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-    
-
-    def sendfile_aes2(self, usernameto, filename,key="ini key"):
-        if(self.tokenid==""):
-            return "Error, not authorized"
-        try :
-            file = open(filename, "rb")
-        except FileNotFoundError :
-            return "Error, {} file not found".format(filename)
-        buffer = file.read()
-        # key="12345678"
-        # cipher2 = AESCipher(str(key), False)
-        encrypted_buffer = cipher.encrypt_byte(buffer)
-        encrypted_file = open(filename+".aes", "wb")
-        encrypted_file.write(encrypted_buffer)
-        file.close()
-        encrypted_file.close()
-        buffer_string = base64.b64encode(encrypted_buffer).decode('utf-8')
-        message="send_file_aes {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename+".aes",key, buffer_string)
-        result = self.sendstring(message)
-        if result['status']=='OK':
-            return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
-        else:
-            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-
     def myfile(self):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -136,54 +108,16 @@ class ChatClient:
             return "{}" . format(json.dumps(result['messages']))
         else:   
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-    
-    def downloadfile_aes(self, username, filename,key):
-        if (self.tokenid==""):
-            return "Error, not authorized"
-        string="download_file_aes {} {} {} {}\r\n" . format(self.tokenid, username, filename, key)
-        result = self.sendstring(string)
-        if result['status']=='OK':
-            try:
-                cipher3 = AESCipher(str(key), False)
-                output_file = open("Saved/"+result['filename'], 'wb')
-                decrypted_buffer = cipher3.decrypt_byte(base64.b64decode(result['data']))
-                output_file.write(decrypted_buffer)
-                output_file.close()
-                return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
-            except BaseException as err:
-                print(f"Unexpected {err=}, {type(err)=}")
-                return {'status' : 'ERROR', 'message':'file {} decrypted' . format(filename)}
-        else:
-            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-
-    def downloadfile_aes2(self, username, filename,key="ini key"):
-        if (self.tokenid==""):
-            return "Error, not authorized"
-        string="download_file_aes {} {} {} {}\r\n" . format(self.tokenid, username, filename, key)
-        result = self.sendstring(string)
-        if result['status']=='OK':
-            try:
-                cipher3 = AESCipher(str(key), False)
-                output_file = open("Saved/"+result['filename'], 'wb')
-                decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
-                output_file.write(decrypted_buffer)
-                output_file.close()
-                return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
-            except BaseException as err:
-                print(f"Unexpected {err=}, {type(err)=}")
-                return {'status' : 'ERROR', 'message':'file {} decrypted' . format(filename)}
-        else:
-            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-    
-    def downloadfileonly(self, username, filename):
+    def downloadfile(self, username, filename):
         if (self.tokenid==""):
             return "Error, not authorized"
         string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename)
         result = self.sendstring(string)
         if result['status']=='OK':
-            output_file = open("Saved/"+result['filename'], 'wb')
-            # decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
-            output_file.write(base64.b64decode(result['data']))
+            cipher3 = AESCipher("ini key1", True) 
+            output_file = open(result['filename'], 'wb')
+            decrypted_buffer = cipher3.decrypt_byte(base64.b64decode(result['data']))
+            output_file.write(decrypted_buffer)
             output_file.close()
             return {'status' : 'OK', 'message':'file {} downloaded' . format(filename)}
         else:
@@ -207,7 +141,17 @@ class ChatClient:
             return {'status':'OK', 'key':result['key']}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-
+    # def getAES(self, username):
+    #     if(username not in  AESDict):
+    #         result = self.getkey(username)
+    #         if result['status'] == 'OK':
+    #             diffieHelman.genKey(int(result['key']))
+    #             AESDict[username] = AESCipher(f'{diffieHelman.getKey()}', True)
+    #             return AESDict[username]
+    #         else :
+    #             return AESC
+    #     else :
+    #         return AESDict[username]
 if __name__=="__main__":
     cc = ChatClient()
     while True:
