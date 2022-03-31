@@ -117,12 +117,16 @@ class ChatClient:
         string="download_file_aes {} {} {} {}\r\n" . format(self.tokenid, username, filename, key)
         result = self.sendstring(string)
         if result['status']=='OK':
-            cipher = AESCipher(str(key), True)
-            output_file = open(result['filename'], 'wb')
-            decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
-            output_file.write(decrypted_buffer)
-            output_file.close()
-            return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
+            try:
+                cipher2 = AESCipher(str(key), True)
+                output_file = open(result['filename'], 'wb')
+                decrypted_buffer = cipher2.decrypt_byte(base64.b64decode(result['data']))
+                output_file.write(decrypted_buffer)
+                output_file.close()
+                return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
+            except BaseException as err:
+                print(f"Unexpected {err=}, {type(err)=}")
+                return {'status' : 'ERROR', 'message':'file {} decrypted' . format(filename)}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     
