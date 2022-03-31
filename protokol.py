@@ -53,7 +53,7 @@ class Chat:
 				filename = j[3].strip()
 				key = j[4].strip()
 				message=""
-				for w in j[4:-1]:
+				for w in j[5:-1]:
 					message="{}{}" . format(message,w)
 				
 				usernamefrom = self.sessions[sessionid]['username']

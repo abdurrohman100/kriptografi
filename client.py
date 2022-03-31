@@ -94,7 +94,7 @@ class ChatClient:
         file.close()
         encrypted_file.close()
         buffer_string = base64.b64encode(encrypted_buffer).decode('utf-8')
-        message="send_file {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename, buffer_string)
+        message="send_file {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename,key, buffer_string)
         result = self.sendstring(message)
         if result['status']=='OK':
             return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
