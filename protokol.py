@@ -169,6 +169,7 @@ class Chat:
 				s_to['files'][username_from] = {}
 				s_to['files'][username_from][filename] = message
 				# print(type(s_to['files'][username_from][filename]))
+				s_to['file_keys'][username_from] = {}
 				s_to['file_keys'][username_from][filename] = message = key
 			try : 
 				s_fr['files'][username_dest][filename] = message
@@ -176,6 +177,7 @@ class Chat:
 			except KeyError:
 				s_fr['files'][username_dest] = {}
 				s_fr['files'][username_dest][filename] = message
+				s_fr['file_keys'][username_dest] = {}
 				s_fr['file_keys'][username_dest][filename] = key
 		except KeyError:
 			return {'status': 'ERROR', 'message': 'File Not Sent'}
