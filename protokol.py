@@ -99,6 +99,7 @@ class Chat:
 			return { 'status': 'ERROR', 'message' : 'Informasi tidak ditemukan'}
 		except IndexError:
 			return {'status': 'ERROR', 'message': '--Protocol Tidak Benar'}
+	
 	def autentikasi_user(self,username,password):
 		if (username not in self.users):
 			return { 'status': 'ERROR', 'message': 'User Tidak Ada' }
@@ -181,21 +182,27 @@ class Chat:
 		if (s_fr==False or s_to==False):
 			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
 
-		try : 
-			s_to['files'][username_from][filename] = message
-			s_to['files'][username_from][filename]['key'] = key
-		except KeyError:
-			s_to['files'][username_from] = {}
-			s_to['files'][username_from][filename] = message
-			s_to['files'][username_from][filename]['key'] = key
+		
 
-		try : 
-			s_fr['files'][username_dest][filename] = message
-			s_fr['files'][username_dest][filename]['key'] = key
+		
+		
+		try :
+			try : 
+				s_to['files'][username_from][filename] = message
+				s_to['files'][username_from][filename]['key'] = key
+			except KeyError:
+				s_to['files'][username_from] = {}
+				s_to['files'][username_from][filename] = message
+				s_to['files'][username_from][filename]['key'] = key
+			try : 
+				s_fr['files'][username_dest][filename] = message
+				s_fr['files'][username_dest][filename]['key'] = key
+			except KeyError:
+				s_fr['files'][username_dest] = {}
+				s_fr['files'][username_dest][filename] = message
+				s_fr['files'][username_dest][filename]['key'] = key
 		except KeyError:
-			s_fr['files'][username_dest] = {}
-			s_fr['files'][username_dest][filename] = message
-			s_fr['files'][username_dest][filename]['key'] = key
+			print(KeyError)
 
 		return {'status': 'OK', 'message': 'File Sent'}
 	def send_group_file(self, sessionid, username_from, group_dest, filename, message):
