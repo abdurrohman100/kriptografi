@@ -164,19 +164,19 @@ class Chat:
 			try : 
 				s_to['files'][username_from][filename] = message
 				print(type(s_to['files'][username_from][filename]))
-				s_to['files'][username_from][filename]['key'] = key
+				# s_to['files'][username_from][filename]['key'] = key
 			except KeyError:
 				s_to['files'][username_from] = {}
 				s_to['files'][username_from][filename] = message
 				print(type(s_to['files'][username_from][filename]))
-				s_to['files'][username_from][filename]['key'] = key
+				# s_to['files'][username_from][filename]['key'] = key
 			try : 
 				s_fr['files'][username_dest][filename] = message
-				s_fr['files'][username_dest][filename]['key'] = key
+				# s_fr['files'][username_dest][filename]['key'] = key
 			except KeyError:
 				s_fr['files'][username_dest] = {}
 				s_fr['files'][username_dest][filename] = message
-				s_fr['files'][username_dest][filename]['key'] = key
+				# s_fr['files'][username_dest][filename]['key'] = key
 		except KeyError:
 			return {'status': 'ERROR', 'message': 'File Not Sent'}
 
