@@ -27,7 +27,7 @@ class AESCipher(object):
     def encrypt_byte(self, byte):
         byte = self.__pad_byte(byte)
         iv = Random.new().read(self.block_size)
-        print(iv)
+        # print(iv)
         if self.scratch :
             cipher = CBC(self.key, byte, iv)
             encrypted_byte = cipher.encrypt()
