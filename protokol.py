@@ -24,51 +24,51 @@ class Chat:
 				password=j[2].strip()
 				logging.warning("AUTH: auth {} {}" . format(username,password))
 				return self.autentikasi_user(username,password)
-			elif (command=='send'):
-				sessionid = j[1].strip()
-				usernameto = j[2].strip()
-				message=""
-				for w in j[3:]:
-					message="{} {}" . format(message,w)
-				usernamefrom = self.sessions[sessionid]['username']
-				logging.warning("SEND: session {} send message from {} to {}" . format(sessionid, usernamefrom,usernameto))
-				return self.send_message(sessionid,usernamefrom,usernameto,message)
-			elif (command=='inbox'):
-				sessionid = j[1].strip()
-				username = self.sessions[sessionid]['username']
-				logging.warning("INBOX: {}" . format(sessionid))
-				return self.get_inbox(username)
-			elif (command=='send_group'):
-				sessionid = j[1].strip()
-				groupto = j[2].strip()
-				usernamefrom = self.sessions[sessionid]['username']
-				message=""
-				for w in j[3:]:
-					message="{} {}" . format(message,w)
-				logging.warning("SEND: session {} send message from {} to group {}" . format(sessionid, usernamefrom, groupto))
-				return self.send_groupmessage(sessionid,usernamefrom,groupto,message)
-			elif (command=='send_file'):
+			# elif (command=='send'):
+			# 	sessionid = j[1].strip()
+			# 	usernameto = j[2].strip()
+			# 	message=""
+			# 	for w in j[3:]:
+			# 		message="{} {}" . format(message,w)
+			# 	usernamefrom = self.sessions[sessionid]['username']
+			# 	logging.warning("SEND: session {} send message from {} to {}" . format(sessionid, usernamefrom,usernameto))
+			# 	return self.send_message(sessionid,usernamefrom,usernameto,message)
+			# elif (command=='inbox'):
+			# 	sessionid = j[1].strip()
+			# 	username = self.sessions[sessionid]['username']
+			# 	logging.warning("INBOX: {}" . format(sessionid))
+			# 	return self.get_inbox(username)
+			# elif (command=='send_group'):
+			# 	sessionid = j[1].strip()
+			# 	groupto = j[2].strip()
+			# 	usernamefrom = self.sessions[sessionid]['username']
+			# 	message=""
+			# 	for w in j[3:]:
+			# 		message="{} {}" . format(message,w)
+			# 	logging.warning("SEND: session {} send message from {} to group {}" . format(sessionid, usernamefrom, groupto))
+			# 	return self.send_groupmessage(sessionid,usernamefrom,groupto,message)
+			elif (command=='send_file_aes'):
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
-				# key = j[4].strip()
+				key = j[4].strip()
 				message=""
 				for w in j[4:-1]:
 					message="{}{}" . format(message,w)
 				
 				usernamefrom = self.sessions[sessionid]['username']
 				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
-				return self.send_file(sessionid,usernamefrom,usernameto,filename,message)
-			elif (command=='send_group_file'):
-				sessionid = j[1].strip()
-				groupto = j[2].strip()
-				filename = j[3].strip()
-				message=""
-				for w in j[4:-1]:
-					message="{}{}" . format(message,w)
-				usernamefrom = self.sessions[sessionid]['username']
-				logging.warning("SEND: session {} send file {} from {} to group {} with data {}" . format(sessionid, filename, usernamefrom, groupto, message))
-				return self.send_group_file(sessionid, usernamefrom, groupto, filename, message)
+				return self.send_file(sessionid,usernamefrom,usernameto,filename,message,key)
+			# elif (command=='send_group_file'):
+			# 	sessionid = j[1].strip()
+			# 	groupto = j[2].strip()
+			# 	filename = j[3].strip()
+			# 	message=""
+			# 	for w in j[4:-1]:
+			# 		message="{}{}" . format(message,w)
+			# 	usernamefrom = self.sessions[sessionid]['username']
+			# 	logging.warning("SEND: session {} send file {} from {} to group {} with data {}" . format(sessionid, filename, usernamefrom, groupto, message))
+			# 	return self.send_group_file(sessionid, usernamefrom, groupto, filename, message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
 				logging.warning("FILES: session {}" . format(sessionid))
@@ -78,9 +78,10 @@ class Chat:
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
+				key = j[4].strip()
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
-				return self.download_file(sessionid, username, usernameto, filename)
+				return self.download_file(sessionid, username, usernameto, filename,key)
 			# elif (command=='sendkey'):
 			# 	sessionid = j[1].strip()
 			# 	key = j[2].strip()
@@ -172,7 +173,7 @@ class Chat:
 				inqueue_receiver[group_to].put(message_in)
 		
 		return {'status': 'OK', 'message': 'Message Sent'}
-	def send_file(self, sessionid, username_from, username_dest, filename, message):
+	def send_file(self, sessionid, username_from, username_dest, filename, message, key):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_fr = self.get_user(username_from)
@@ -182,15 +183,19 @@ class Chat:
 
 		try : 
 			s_to['files'][username_from][filename] = message
+			s_to['files'][username_from][filename]['key'] = key
 		except KeyError:
 			s_to['files'][username_from] = {}
 			s_to['files'][username_from][filename] = message
+			s_to['files'][username_from][filename]['key'] = key
 
 		try : 
 			s_fr['files'][username_dest][filename] = message
+			s_fr['files'][username_dest][filename]['key'] = key
 		except KeyError:
 			s_fr['files'][username_dest] = {}
 			s_fr['files'][username_dest][filename] = message
+			s_fr['files'][username_dest][filename]['key'] = key
 
 		return {'status': 'OK', 'message': 'File Sent'}
 	def send_group_file(self, sessionid, username_from, group_dest, filename, message):
@@ -232,7 +237,20 @@ class Chat:
 			for file in files[user] :
 				msgs[user].append(file)
 		return {'status': 'OK', 'messages': msgs}
-	def download_file(self, sessionid, username, usernameto, filename):
+	def download_file(self, sessionid, username, usernameto, filename,key):
+		if (sessionid not in self.sessions):
+			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
+		s_usr = self.get_user(username)
+		if(usernameto not in s_usr['files']):
+			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
+		if filename not in s_usr['files'][usernameto]:
+			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
+		data = s_usr['files'][usernameto][filename]
+		if(key.__eq__(s_usr['files'][usernameto][filename]['key'])):
+			return {'status': 'ERROR', 'message': 'Keypharse Tidak Cocok'}
+		return {'status': 'OK', 'messages': f'Downloaded {filename}', 'filename':f'{filename}', 'data':f'{data}'}
+
+	def download_file_only(self, sessionid, username, usernameto, filename):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_usr = self.get_user(username)

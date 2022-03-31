@@ -117,6 +117,7 @@ class ChatClient:
         string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename)
         result = self.sendstring(string)
         if result['status']=='OK':
+            cipher = AESCipher(key, True)
             output_file = open(result['filename'], 'wb')
             decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
             output_file.write(decrypted_buffer)
