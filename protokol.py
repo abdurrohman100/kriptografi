@@ -58,17 +58,7 @@ class Chat:
 				
 				usernamefrom = self.sessions[sessionid]['username']
 				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
-				return self.send_file(sessionid,usernamefrom,usernameto,filename,message,key)
-			# elif (command=='send_group_file'):
-			# 	sessionid = j[1].strip()
-			# 	groupto = j[2].strip()
-			# 	filename = j[3].strip()
-			# 	message=""
-			# 	for w in j[4:-1]:
-			# 		message="{}{}" . format(message,w)
-			# 	usernamefrom = self.sessions[sessionid]['username']
-			# 	logging.warning("SEND: session {} send file {} from {} to group {} with data {}" . format(sessionid, filename, usernamefrom, groupto, message))
-			# 	return self.send_group_file(sessionid, usernamefrom, groupto, filename, message)
+				return self.send_file(sessionid,usernamefrom,usernameto,filename,key,message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
 				logging.warning("FILES: session {}" . format(sessionid))
@@ -82,17 +72,6 @@ class Chat:
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
 				return self.download_file(sessionid, username, usernameto, filename,key)
-			# elif (command=='sendkey'):
-			# 	sessionid = j[1].strip()
-			# 	key = j[2].strip()
-			# 	logging.warning("SEND KEY: session {} key {}" . format(sessionid, key))
-			# 	username = self.sessions[sessionid]['username']
-			# 	return self.sendkey(sessionid, username, key)
-			# elif (command=='getkey'):
-			# 	sessionid = j[1].strip()
-			# 	usernameto = j[2].strip()
-			# 	logging.warning("GET KEY: session {} username {}" . format(sessionid, usernameto))
-			# 	return self.getkey(sessionid, usernameto)
 			else:
 				return {'status': 'ERROR', 'message': '**Protocol Tidak Benar'}
 		except KeyError:
@@ -174,7 +153,7 @@ class Chat:
 				inqueue_receiver[group_to].put(message_in)
 		
 		return {'status': 'OK', 'message': 'Message Sent'}
-	def send_file(self, sessionid, username_from, username_dest, filename, message, key):
+	def send_file(self, sessionid, username_from, username_dest, filename,key, message):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_fr = self.get_user(username_from)
@@ -202,7 +181,7 @@ class Chat:
 				s_fr['files'][username_dest][filename] = message
 				s_fr['files'][username_dest][filename]['key'] = key
 		except KeyError:
-			print(KeyError)
+			return {'status': 'NOOO', 'message': 'File NOt Sent'}
 
 		return {'status': 'OK', 'message': 'File Sent'}
 	def send_group_file(self, sessionid, username_from, group_dest, filename, message):
