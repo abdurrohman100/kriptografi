@@ -16,8 +16,6 @@ class AESCipher(object):
     def encrypt(self, plain_text):
         plain_text = self.__pad(plain_text)
         iv = Random.new().read(self.block_size)
-        print(iv)
-        return
         if self.scratch :
             cipher = CBC(self.key, plain_text.encode(), iv)
             encrypted_text = cipher.encrypt()
@@ -102,23 +100,3 @@ if __name__=="__main__":
     # print(b64encode(enc).decode())
     dec = aes.decrypt_byte(enc)
     t2 = time()
-
-    # print('message')
-    # message = 'aaaaaaaaaaaaaaaxybbbbbbbbbbbbbbb'
-    # print(message)
-    # print()
-
-    # print('encryption took ' + str(t1-t0)+ ' seconds')
-    # enc = aes.encrypt("aaaaaaaaaaaaaaaxybbbbbbbbbbbbbbb")
-    # print(enc)
-    # print()
-
-    # print('decryption took ' + str(t2-t1) + ' seconds')
-    # print(aes.decrypt(enc))
-    # print()
-
-    # print(dec)
-    # print(aes.encrypt("a"))
-    # print(aes.decrypt(aes.encrypt("a")))
-
-

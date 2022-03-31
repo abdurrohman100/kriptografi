@@ -13,7 +13,7 @@ AESDict = {}
 TARGET_IP = "167.172.77.139"
 TARGET_PORT = 8889
 
-cipher = AESCipher("ini key", True)
+# cipher = AESCipher("ini key", True)
 
 class ChatClient:
     def __init__(self):
@@ -31,17 +31,23 @@ class ChatClient:
                 password=j[2].strip()
                 response = self.login(username,password)
                 return response
-            elif (command=='send_file'):
+            elif (command=='send_file_aes'):
                 usernameto = j[1].strip()
                 filename = j[2].strip()
-                return self.sendfile(usernameto,filename)
-                return self.sendgroupfile(groupto,filename)
+                key = j[3].strip()
+                return self.sendfile_aes(usernameto,filename,key)
             elif (command=='my_file'):
                 return self.myfile()
             elif (command=='download_file'):
                 username = j[1].strip()
                 filename = j[2].strip()
-                return self.downloadfile(username, filename)
+                key = j[3].strip()
+                return self.downloadfile(username, filename, key)
+            elif (command=='download_only'):
+                username = j[1].strip()
+                filename = j[2].strip()
+                # key = j[3].strip()
+                return self.downloadfileonly(username, filename)
             else:
                 return "*Maaf, command tidak benar"
         except IndexError:
@@ -73,7 +79,7 @@ class ChatClient:
         else:
             return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
 
-    def sendfile(self, usernameto, filename):
+    def sendfile_aes(self, usernameto, filename,key):
         if(self.tokenid==""):
             return "Error, not authorized"
         try :
@@ -81,8 +87,9 @@ class ChatClient:
         except FileNotFoundError :
             return "Error, {} file not found".format(filename)
         buffer = file.read()
+        cipher = AESCipher(key, True)
         encrypted_buffer = cipher.encrypt_byte(buffer)
-        encrypted_file = open(filename+".enc", "wb")
+        encrypted_file = open(filename+".aes", "wb")
         encrypted_file.write(encrypted_buffer)
         file.close()
         encrypted_file.close()
@@ -93,6 +100,7 @@ class ChatClient:
             return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+
     def myfile(self):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -102,7 +110,8 @@ class ChatClient:
             return "{}" . format(json.dumps(result['messages']))
         else:   
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-    def downloadfile(self, username, filename):
+    
+    def downloadfile(self, username, filename,key):
         if (self.tokenid==""):
             return "Error, not authorized"
         string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename)
@@ -111,6 +120,20 @@ class ChatClient:
             output_file = open(result['filename'], 'wb')
             decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
             output_file.write(decrypted_buffer)
+            output_file.close()
+            return {'status' : 'OK', 'message':'file {} downloaded' . format(filename)}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    
+    def downloadfileonly(self, username, filename):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            output_file = open(result['filename'], 'wb')
+            # decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
+            output_file.write(base64.b64decode(result['data']))
             output_file.close()
             return {'status' : 'OK', 'message':'file {} downloaded' . format(filename)}
         else:
