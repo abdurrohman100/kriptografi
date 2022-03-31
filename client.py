@@ -165,7 +165,7 @@ class ChatClient:
             try:
                 cipher3 = AESCipher(str(key), False)
                 output_file = open("Saved/"+result['filename'], 'wb')
-                decrypted_buffer = cipher3.decrypt_byte(base64.b64decode(result['data']))
+                decrypted_buffer = cipher.decrypt_byte(base64.b64decode(result['data']))
                 output_file.write(decrypted_buffer)
                 output_file.close()
                 return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
