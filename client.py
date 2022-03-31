@@ -6,7 +6,7 @@ import json
 from DiffieHellman import DiffieHellman
 # from aes import AESCipher
 
-AESC = AESCipher("kijpakbas", True)
+# AESC = AESCipher("kijpakbas", True)
 
 diffieHelman = DiffieHellman()
 
@@ -44,12 +44,12 @@ class ChatClient:
                 username = j[1].strip()
                 filename = j[2].strip()
                 return self.downloadfile(username, filename)
-            elif (command=='sendkey'):
-                key = j[1].strip()
-                return self.sendkey(key)
-            elif (command=='getkey'):
-                username = j[1].strip()
-                return self.getkey(username)
+            # elif (command=='sendkey'):
+            #     key = j[1].strip()
+            #     return self.sendkey(key)
+            # elif (command=='getkey'):
+            #     username = j[1].strip()
+            #     return self.getkey(username)
             else:
                 return "*Maaf, command tidak benar"
         except IndexError:

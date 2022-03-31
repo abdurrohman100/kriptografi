@@ -80,17 +80,17 @@ class Chat:
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
 				return self.download_file(sessionid, username, usernameto, filename)
-			elif (command=='sendkey'):
-				sessionid = j[1].strip()
-				key = j[2].strip()
-				logging.warning("SEND KEY: session {} key {}" . format(sessionid, key))
-				username = self.sessions[sessionid]['username']
-				return self.sendkey(sessionid, username, key)
-			elif (command=='getkey'):
-				sessionid = j[1].strip()
-				usernameto = j[2].strip()
-				logging.warning("GET KEY: session {} username {}" . format(sessionid, usernameto))
-				return self.getkey(sessionid, usernameto)
+			# elif (command=='sendkey'):
+			# 	sessionid = j[1].strip()
+			# 	key = j[2].strip()
+			# 	logging.warning("SEND KEY: session {} key {}" . format(sessionid, key))
+			# 	username = self.sessions[sessionid]['username']
+			# 	return self.sendkey(sessionid, username, key)
+			# elif (command=='getkey'):
+			# 	sessionid = j[1].strip()
+			# 	usernameto = j[2].strip()
+			# 	logging.warning("GET KEY: session {} username {}" . format(sessionid, usernameto))
+			# 	return self.getkey(sessionid, usernameto)
 			else:
 				return {'status': 'ERROR', 'message': '**Protocol Tidak Benar'}
 		except KeyError:
