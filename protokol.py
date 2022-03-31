@@ -11,9 +11,9 @@ class Chat:
 		self.sessions={}
 		self.users = {}
 		self.groups = {}
-		self.users['A']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': '1', 'incoming' : {}, 'outgoing': {}, 'files': {}}
-		self.users['B']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': '1', 'incoming': {}, 'outgoing': {}, 'files': {}}
-		self.users['lineker']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': 'surabaya','incoming': {}, 'outgoing': {}, 'files': {}}
+		self.users['a']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': '1', 'incoming' : {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
+		self.users['b']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': '1', 'incoming': {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
+		self.users['lineker']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': 'surabaya','incoming': {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
 		self.groups['group1']={'nama': 'Group 1','member': ['messi','henderson','lineker']}
 	def proses(self,data):
 		j=data.split(" ")
@@ -51,13 +51,14 @@ class Chat:
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
+				key = j[4].strip()
 				message=""
-				for w in j[4:-1]:
+				for w in j[5:-1]:
 					message="{}{}" . format(message,w)
 				
 				usernamefrom = self.sessions[sessionid]['username']
 				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
-				return self.send_file(sessionid,usernamefrom,usernameto,filename,message)
+				return self.send_file(sessionid,usernamefrom,usernameto,filename,key,message)
 			elif (command=='send_group_file'):
 				sessionid = j[1].strip()
 				groupto = j[2].strip()
@@ -77,9 +78,10 @@ class Chat:
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
+				key = j[4].strip()
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
-				return self.download_file(sessionid, username, usernameto, filename)
+				return self.download_file(sessionid, username, usernameto, filename,key)
 			elif (command=='sendkey'):
 				sessionid = j[1].strip()
 				key = j[2].strip()
@@ -171,7 +173,7 @@ class Chat:
 				inqueue_receiver[group_to].put(message_in)
 		
 		return {'status': 'OK', 'message': 'Message Sent'}
-	def send_file(self, sessionid, username_from, username_dest, filename, message):
+	def send_file(self, sessionid, username_from, username_dest, filename,key, message):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_fr = self.get_user(username_from)
@@ -179,6 +181,12 @@ class Chat:
 		if (s_fr==False or s_to==False):
 			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
 
+		try : 
+			s_to['passwd'][username_from][filename] = key
+		except KeyError:
+			s_to['passwd'][username_from] = {}
+			s_to['passwd'][username_from][filename] = key
+		
 		try : 
 			s_to['files'][username_from][filename] = message
 		except KeyError:
@@ -231,7 +239,7 @@ class Chat:
 			for file in files[user] :
 				msgs[user].append(file)
 		return {'status': 'OK', 'messages': msgs}
-	def download_file(self, sessionid, username, usernameto, filename):
+	def download_file(self, sessionid, username, usernameto, filename,key):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_usr = self.get_user(username)
@@ -240,7 +248,8 @@ class Chat:
 		if filename not in s_usr['files'][usernameto]:
 			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
 		data = s_usr['files'][usernameto][filename]
-		return {'status': 'OK', 'messages': f'Downloaded {filename}', 'filename':f'{filename}', 'data':f'{data}'}
+		gkey=s_usr['passwd'][usernameto][filename]
+		return {'status': 'OK', 'messages': f'Downloaded {gkey}', 'filename':f'{filename}', 'data':f'{data}'}
 
 	def get_inbox(self,username):
 		s_fr = self.get_user(username)
