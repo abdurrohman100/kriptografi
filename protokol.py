@@ -240,8 +240,9 @@ class Chat:
 			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
 		data = s_usr['files'][usernameto][filename]
 		if(key.__eq__(s_usr['file_keys'][usernameto][filename])):
+			return {'status': 'OK', 'messages': f'Downloaded {filename}', 'filename':f'{filename}', 'data':f'{data}'}
+		else:
 			return {'status': 'ERROR', 'message': 'Keypharse Tidak Cocok'}
-		return {'status': 'OK', 'messages': f'Downloaded {filename}', 'filename':f'{filename}', 'data':f'{data}'}
 
 	def download_file_only(self, sessionid, username, usernameto, filename):
 		if (sessionid not in self.sessions):
