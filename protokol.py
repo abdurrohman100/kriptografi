@@ -33,21 +33,7 @@ class Chat:
 				usernamefrom = self.sessions[sessionid]['username']
 				logging.warning("SEND: session {} send message from {} to {}" . format(sessionid, usernamefrom,usernameto))
 				return self.send_message(sessionid,usernamefrom,usernameto,message)
-			elif (command=='inbox'):
-				sessionid = j[1].strip()
-				username = self.sessions[sessionid]['username']
-				logging.warning("INBOX: {}" . format(sessionid))
-				return self.get_inbox(username)
-			elif (command=='send_group'):
-				sessionid = j[1].strip()
-				groupto = j[2].strip()
-				usernamefrom = self.sessions[sessionid]['username']
-				message=""
-				for w in j[3:]:
-					message="{} {}" . format(message,w)
-				logging.warning("SEND: session {} send message from {} to group {}" . format(sessionid, usernamefrom, groupto))
-				return self.send_groupmessage(sessionid,usernamefrom,groupto,message)
-			elif (command=='send_file'):
+			elif (command=='send_file_aes'):
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
@@ -55,33 +41,22 @@ class Chat:
 				message=""
 				for w in j[5:-1]:
 					message="{}{}" . format(message,w)
-				
 				usernamefrom = self.sessions[sessionid]['username']
 				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
-				return self.send_file(sessionid,usernamefrom,usernameto,filename,key,message)
-			elif (command=='send_group_file'):
-				sessionid = j[1].strip()
-				groupto = j[2].strip()
-				filename = j[3].strip()
-				message=""
-				for w in j[4:-1]:
-					message="{}{}" . format(message,w)
-				usernamefrom = self.sessions[sessionid]['username']
-				logging.warning("SEND: session {} send file {} from {} to group {} with data {}" . format(sessionid, filename, usernamefrom, groupto, message))
-				return self.send_group_file(sessionid, usernamefrom, groupto, filename, message)
+				return self.send_file_aes(sessionid,usernamefrom,usernameto,filename,key,message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
 				logging.warning("FILES: session {}" . format(sessionid))
 				username = self.sessions[sessionid]['username']
 				return self.my_file(sessionid, username)
-			elif (command=='download_file'):
+			elif (command=='download_file_aes'):
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
 				key = j[4].strip()
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
-				return self.download_file(sessionid, username, usernameto, filename,key)
+				return self.download_file_aes(sessionid, username, usernameto, filename,key)
 			elif (command=='sendkey'):
 				sessionid = j[1].strip()
 				key = j[2].strip()
@@ -138,42 +113,8 @@ class Chat:
 			inqueue_receiver[username_from]=Queue()
 			inqueue_receiver[username_from].put(message)
 		return {'status': 'OK', 'message': 'Message Sent'}
-	def send_groupmessage(self, sessionid, username_from, group_to, message):
-		if (sessionid not in self.sessions):
-			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
-		s_fr = self.get_user(username_from)
-		s_gr = self.get_group(group_to)
-
-		if (s_fr==False):
-			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
-
-		if (s_gr==False):
-			return {'status': 'ERROR', 'message': 'Group Tidak Ditemukan'}
-
-		outqueue_sender = s_fr['outgoing']
-		message_out = {'msg_from': s_fr['nama'], 'msg_to': s_gr['nama'], 'msg': message}
-		try:	
-			outqueue_sender[username_from].put(message_out)
-		except KeyError:
-			outqueue_sender[username_from]=Queue()
-			outqueue_sender[username_from].put(message_out)
-
-		for member in s_gr['member']:
-			if(member == username_from):
-				continue
-			s_to = self.get_user(member)
-			if(s_to==False):
-				continue
-			message_in = {'msg_from': s_fr['nama'], 'msg_to': s_to['nama'], 'msg': message}
-			inqueue_receiver = s_to['incoming']
-			try:
-				inqueue_receiver[group_to].put(message_in)
-			except KeyError:
-				inqueue_receiver[group_to]=Queue()
-				inqueue_receiver[group_to].put(message_in)
-		
-		return {'status': 'OK', 'message': 'Message Sent'}
-	def send_file(self, sessionid, username_from, username_dest, filename,key, message):
+	
+	def send_file_aes(self, sessionid, username_from, username_dest, filename,key, message):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_fr = self.get_user(username_from)
@@ -200,34 +141,6 @@ class Chat:
 			s_fr['files'][username_dest][filename] = message
 
 		return {'status': 'OK', 'message': 'File Sent'}
-	def send_group_file(self, sessionid, username_from, group_dest, filename, message):
-		if (sessionid not in self.sessions):
-			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
-		s_fr = self.get_user(username_from)
-		s_gr = self.get_group(group_dest)
-		if (s_fr==False):
-			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
-		if (s_gr==False):
-			return {'status': 'ERROR', 'message': 'Group Tidak Ditemukan'}
-
-		try : 
-			s_fr['files'][group_dest][filename] = message
-		except KeyError:
-			s_fr['files'][group_dest] = {}
-			s_fr['files'][group_dest][filename] = message
-
-		for member in s_gr['member']:
-			s_to = self.get_user(member)
-			if(s_to==False):
-				continue
-			try : 
-				s_to['files'][group_dest][filename] = message
-			except KeyError:
-				s_to['files'][group_dest] = {}
-				s_to['files'][group_dest][filename] = message
-			
-
-		return {'status': 'OK', 'message': 'File Sent'}
 	def my_file(self, sessionid, username):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
@@ -239,7 +152,7 @@ class Chat:
 			for file in files[user] :
 				msgs[user].append(file)
 		return {'status': 'OK', 'messages': msgs}
-	def download_file(self, sessionid, username, usernameto, filename,key):
+	def download_file_aes(self, sessionid, username, usernameto, filename,key):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_usr = self.get_user(username)
@@ -252,19 +165,6 @@ class Chat:
 		# if key==gkey:
 		return {'status': 'OK', 'messages': f'Downloaded {gkey}', 'filename':f'{filename}', 'data':f'{data}'}
 
-		
-
-
-	def get_inbox(self,username):
-		s_fr = self.get_user(username)
-		incoming = s_fr['incoming']
-		msgs={}
-		for users in incoming:
-			msgs[users]=[]
-			while not incoming[users].empty():
-				msgs[users].append(s_fr['incoming'][users].get_nowait())
-			
-		return {'status': 'OK', 'messages': msgs}
 	def sendkey(self, sessionid, username, key):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}

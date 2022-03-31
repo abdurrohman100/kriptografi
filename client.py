@@ -33,18 +33,18 @@ class ChatClient:
                 password=j[2].strip()
                 response = self.login(username,password)
                 return response
-            elif (command=='send_file'):
+            elif (command=='send_aes'):
                 usernameto = j[1].strip()
                 filename = j[2].strip()
                 pkey = j[3].strip()
-                return self.sendfile(usernameto,filename,pkey)
+                return self.sendfile_aes(usernameto,filename,pkey)
             elif (command=='my_file'):
                 return self.myfile()
-            elif (command=='download_file'):
+            elif (command=='download_aes'):
                 username = j[1].strip()
                 filename = j[2].strip()
                 pkey = j[3].strip()
-                return self.downloadfile(username, filename,pkey)
+                return self.downloadfile_aes(username, filename,pkey)
             elif (command=='sendkey'):
                 key = j[1].strip()
                 return self.sendkey(key)
@@ -80,7 +80,7 @@ class ChatClient:
             return { 'status' : 'OK', 'message' : 'Logged In', 'username':username, 'token':self.tokenid}
         else:
             return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
-    def sendfile(self, usernameto, filename,key):
+    def sendfile_aes(self, usernameto, filename,key):
         if(self.tokenid==""):
             return "Error, not authorized"
         try :
@@ -96,7 +96,7 @@ class ChatClient:
         file.close()
         encrypted_file.close()
         buffer_string = base64.b64encode(encrypted_buffer).decode('utf-8')
-        message="send_file {} {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename,key, buffer_string)
+        message="send_file_aes {} {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename,key, buffer_string)
         result = self.sendstring(message)
         if result['status']=='OK':
             return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
@@ -111,10 +111,10 @@ class ChatClient:
             return "{}" . format(json.dumps(result['messages']))
         else:   
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-    def downloadfile(self, username, filename,key):
+    def downloadfile_aes(self, username, filename,key):
         if (self.tokenid==""):
             return "Error, not authorized"
-        string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename,key)
+        string="download_file_aes {} {} {} \r\n" . format(self.tokenid, username, filename,key)
         result = self.sendstring(string)
         if result['status']=='OK':
             # cipher3 = AESCipher("ini key1", True) 
