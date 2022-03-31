@@ -34,19 +34,18 @@ class ChatClient:
             elif (command=='send_file_aes'):
                 usernameto = j[1].strip()
                 filename = j[2].strip()
-                # key = j[3].strip()
-                return self.sendfile_aes(usernameto,filename)
+                key = j[3].strip()
+                return self.sendfile_aes(usernameto,filename,key)
             elif (command=='my_file'):
                 return self.myfile()
-            elif (command=='download_file'):
+            elif (command=='download_aes'):
                 username = j[1].strip()
                 filename = j[2].strip()
                 key = j[3].strip()
-                return self.downloadfile(username, filename, key)
+                return self.downloadfile_aes(username, filename, key)
             elif (command=='download_only'):
                 username = j[1].strip()
                 filename = j[2].strip()
-                # key = j[3].strip()
                 return self.downloadfileonly(username, filename)
             else:
                 return "*Maaf, command tidak benar"
@@ -79,7 +78,7 @@ class ChatClient:
         else:
             return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
 
-    def sendfile_aes(self, usernameto, filename):
+    def sendfile_aes(self, usernameto, filename,key):
         if(self.tokenid==""):
             return "Error, not authorized"
         try :
@@ -87,7 +86,7 @@ class ChatClient:
         except FileNotFoundError :
             return "Error, {} file not found".format(filename)
         buffer = file.read()
-        key="12345678"
+        # key="12345678"
         cipher = AESCipher(key, True)
         encrypted_buffer = cipher.encrypt_byte(buffer)
         encrypted_file = open(filename+".aes", "wb")
@@ -112,10 +111,10 @@ class ChatClient:
         else:   
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     
-    def downloadfile(self, username, filename,key):
+    def downloadfile_aes(self, username, filename,key):
         if (self.tokenid==""):
             return "Error, not authorized"
-        string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename)
+        string="download_file_aes {} {} {} {}\r\n" . format(self.tokenid, username, filename, key)
         result = self.sendstring(string)
         if result['status']=='OK':
             cipher = AESCipher(key, True)

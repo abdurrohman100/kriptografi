@@ -64,6 +64,14 @@ class Chat:
 				logging.warning("FILES: session {}" . format(sessionid))
 				username = self.sessions[sessionid]['username']
 				return self.my_file(sessionid, username)
+			elif (command=='download_file_aes'):
+				sessionid = j[1].strip()
+				usernameto = j[2].strip()
+				filename = j[3].strip()
+				key = j[4].strip()
+				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
+				username = self.sessions[sessionid]['username']
+				return self.download_file_aes(sessionid, username, usernameto, filename,key)
 			elif (command=='download_file'):
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
@@ -71,7 +79,7 @@ class Chat:
 				key = j[4].strip()
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
-				return self.download_file(sessionid, username, usernameto, filename,key)
+				return self.download_file_aes(sessionid, username, usernameto, filename,key)
 			else:
 				return {'status': 'ERROR', 'message': '**Protocol Tidak Benar'}
 		except KeyError:
@@ -222,7 +230,7 @@ class Chat:
 			for file in files[user] :
 				msgs[user].append(file)
 		return {'status': 'OK', 'messages': msgs}
-	def download_file(self, sessionid, username, usernameto, filename,key):
+	def download_file_aes(self, sessionid, username, usernameto, filename,key):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_usr = self.get_user(username)
@@ -231,7 +239,7 @@ class Chat:
 		if filename not in s_usr['files'][usernameto]:
 			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
 		data = s_usr['files'][usernameto][filename]
-		if(key.__eq__(s_usr['files'][usernameto][filename]['key'])):
+		if(key.__eq__(s_usr['file_keys'][usernameto][filename])):
 			return {'status': 'ERROR', 'message': 'Keypharse Tidak Cocok'}
 		return {'status': 'OK', 'messages': f'Downloaded {filename}', 'filename':f'{filename}', 'data':f'{data}'}
 
