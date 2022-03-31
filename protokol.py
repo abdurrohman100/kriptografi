@@ -11,8 +11,8 @@ class Chat:
 		self.sessions={}
 		self.users = {}
 		self.groups = {}
-		self.users['Ab']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': '1', 'incoming' : {}, 'outgoing': {}, 'files': {}}
-		self.users['Bc']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': '1', 'incoming': {}, 'outgoing': {}, 'files': {}}
+		self.users['A']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': '1', 'incoming' : {}, 'outgoing': {}, 'files': {}}
+		self.users['B']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': '1', 'incoming': {}, 'outgoing': {}, 'files': {}}
 		self.users['lineker']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': 'surabaya','incoming': {}, 'outgoing': {}, 'files': {}}
 		self.groups['group1']={'nama': 'Group 1','member': ['messi','henderson','lineker']}
 	def proses(self,data):

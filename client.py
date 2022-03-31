@@ -36,13 +36,15 @@ class ChatClient:
             elif (command=='send_file'):
                 usernameto = j[1].strip()
                 filename = j[2].strip()
-                return self.sendfile(usernameto,filename)
+                pkey = j[3].strip()
+                return self.sendfile(usernameto,filename,pkey)
             elif (command=='my_file'):
                 return self.myfile()
             elif (command=='download_file'):
                 username = j[1].strip()
                 filename = j[2].strip()
-                return self.downloadfile(username, filename)
+                pkey = j[3].strip()
+                return self.downloadfile(username, filename,pkey)
             elif (command=='sendkey'):
                 key = j[1].strip()
                 return self.sendkey(key)
@@ -78,14 +80,15 @@ class ChatClient:
             return { 'status' : 'OK', 'message' : 'Logged In', 'username':username, 'token':self.tokenid}
         else:
             return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
-    def sendfile(self, usernameto, filename):
+    def sendfile(self, usernameto, filename,key):
         if(self.tokenid==""):
             return "Error, not authorized"
         try :
             file = open(filename, "rb")
         except FileNotFoundError :
             return "Error, {} file not found".format(filename)
-        cipher2 = AESCipher("ini key1", True) 
+        # cipher2 = AESCipher("ini key1", True)
+        cipher2 = AESCipher(key, True) 
         buffer = file.read()
         encrypted_buffer = cipher2.encrypt_byte(buffer)
         encrypted_file = open(filename+".enc", "wb")
@@ -108,13 +111,14 @@ class ChatClient:
             return "{}" . format(json.dumps(result['messages']))
         else:   
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-    def downloadfile(self, username, filename):
+    def downloadfile(self, username, filename,key):
         if (self.tokenid==""):
             return "Error, not authorized"
         string="download_file {} {} {} \r\n" . format(self.tokenid, username, filename)
         result = self.sendstring(string)
         if result['status']=='OK':
-            cipher3 = AESCipher("ini key1", True) 
+            # cipher3 = AESCipher("ini key1", True) 
+            cipher3 = AESCipher(key, True) 
             output_file = open(result['filename'], 'wb')
             decrypted_buffer = cipher3.decrypt_byte(base64.b64decode(result['data']))
             output_file.write(decrypted_buffer)
