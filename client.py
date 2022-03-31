@@ -4,15 +4,13 @@ import socket
 import os
 import json
 from DiffieHellman import DiffieHellman
-# from aes import AESCipher
-
-# AESC = AESCipher("kijpakbas", True)
+from aes import AESCipher
 
 diffieHelman = DiffieHellman()
 
-# AESDict = {}
+AESDict = {}
 
-TARGET_IP = "127.0.0.1"
+TARGET_IP = "167.172.77.139"
 TARGET_PORT = 8889
 
 cipher = AESCipher("ini key", True)
@@ -44,12 +42,6 @@ class ChatClient:
                 username = j[1].strip()
                 filename = j[2].strip()
                 return self.downloadfile(username, filename)
-            # elif (command=='sendkey'):
-            #     key = j[1].strip()
-            #     return self.sendkey(key)
-            # elif (command=='getkey'):
-            #     username = j[1].strip()
-            #     return self.getkey(username)
             else:
                 return "*Maaf, command tidak benar"
         except IndexError:

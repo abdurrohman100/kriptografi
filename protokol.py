@@ -11,9 +11,9 @@ class Chat:
 		self.sessions={}
 		self.users = {}
 		self.groups = {}
-		self.users['messi']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': 'surabaya', 'incoming' : {}, 'outgoing': {}, 'files': {}}
-		self.users['henderson']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': 'surabaya', 'incoming': {}, 'outgoing': {}, 'files': {}}
-		self.users['lineker']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': 'surabaya','incoming': {}, 'outgoing': {}, 'files': {}}
+		self.users['stu']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': 'surabaya', 'incoming' : {}, 'outgoing': {}, 'files': {}}
+		self.users['ubay']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': 'surabaya', 'incoming': {}, 'outgoing': {}, 'files': {}}
+		self.users['sei']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': 'surabaya','incoming': {}, 'outgoing': {}, 'files': {}}
 		self.groups['group1']={'nama': 'Group 1','member': ['messi','henderson','lineker']}
 	def proses(self,data):
 		j=data.split(" ")
@@ -51,6 +51,7 @@ class Chat:
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
+				# key = j[4].strip()
 				message=""
 				for w in j[4:-1]:
 					message="{}{}" . format(message,w)
