@@ -51,14 +51,14 @@ class Chat:
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
-				key = j[4].strip()
+				# key = j[4].strip()
 				message=""
-				for w in j[5:-1]:
+				for w in j[4:-1]:
 					message="{}{}" . format(message,w)
 				
 				usernamefrom = self.sessions[sessionid]['username']
-				logging.warning("SEND: session {} send file {} from {} to {} with key {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, key, message))
-				return self.send_file(sessionid,usernamefrom,usernameto,filename,key,message)
+				logging.warning("SEND: session {} send file {} from {} to {}  with data {}" . format(sessionid, filename, usernamefrom, usernameto, key, message))
+				return self.send_file(sessionid,usernamefrom,usernameto,filename,message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
 				logging.warning("FILES: session {}" . format(sessionid))
@@ -153,18 +153,13 @@ class Chat:
 				inqueue_receiver[group_to].put(message_in)
 		
 		return {'status': 'OK', 'message': 'Message Sent'}
-	def send_file(self, sessionid, username_from, username_dest, filename,key, message):
+	def send_file(self, sessionid, username_from, username_dest, filename, message):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_fr = self.get_user(username_from)
 		s_to = self.get_user(username_dest)
 		if (s_fr==False or s_to==False):
 			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
-
-		
-
-		
-		
 		try :
 			try : 
 				s_to['files'][username_from][filename] = message
