@@ -13,7 +13,7 @@ AESDict = {}
 TARGET_IP = "167.172.77.139"
 TARGET_PORT = 8889
 
-# cipher = AESCipher("ini key", True)
+cipher = AESCipher("ini key", True)
 
 class ChatClient:
     def __init__(self):
@@ -87,7 +87,31 @@ class ChatClient:
             return "Error, {} file not found".format(filename)
         buffer = file.read()
         # key="12345678"
-        cipher = AESCipher(str(key), False)
+        cipher2 = AESCipher(str(key), False)
+        encrypted_buffer = cipher2.encrypt_byte(buffer)
+        encrypted_file = open(filename+".aes", "wb")
+        encrypted_file.write(encrypted_buffer)
+        file.close()
+        encrypted_file.close()
+        buffer_string = base64.b64encode(encrypted_buffer).decode('utf-8')
+        message="send_file_aes {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename+".aes",key, buffer_string)
+        result = self.sendstring(message)
+        if result['status']=='OK':
+            return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    
+
+    def sendfile_aes2(self, usernameto, filename,key="ini key"):
+        if(self.tokenid==""):
+            return "Error, not authorized"
+        try :
+            file = open(filename, "rb")
+        except FileNotFoundError :
+            return "Error, {} file not found".format(filename)
+        buffer = file.read()
+        # key="12345678"
+        # cipher2 = AESCipher(str(key), False)
         encrypted_buffer = cipher.encrypt_byte(buffer)
         encrypted_file = open(filename+".aes", "wb")
         encrypted_file.write(encrypted_buffer)
@@ -118,9 +142,28 @@ class ChatClient:
         result = self.sendstring(string)
         if result['status']=='OK':
             try:
-                cipher2 = AESCipher(str(key), False)
+                cipher3 = AESCipher(str(key), False)
                 output_file = open(result['filename'], 'wb')
-                decrypted_buffer = cipher2.decrypt_byte(base64.b64decode(result['data']))
+                decrypted_buffer = cipher3.decrypt_byte(base64.b64decode(result['data']))
+                output_file.write(decrypted_buffer)
+                output_file.close()
+                return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
+            except BaseException as err:
+                print(f"Unexpected {err=}, {type(err)=}")
+                return {'status' : 'ERROR', 'message':'file {} decrypted' . format(filename)}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+
+    def downloadfile_aes2(self, username, filename,key="ini key"):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="download_file_aes {} {} {} {}\r\n" . format(self.tokenid, username, filename, key)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            try:
+                cipher3 = AESCipher(str(key), False)
+                output_file = open(result['filename'], 'wb')
+                decrypted_buffer = cipher3.decrypt_byte(base64.b64decode(result['data']))
                 output_file.write(decrypted_buffer)
                 output_file.close()
                 return {'status' : 'OK', 'message':'file {} decrypted' . format(filename)}
