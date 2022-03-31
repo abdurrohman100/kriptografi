@@ -11,9 +11,9 @@ class Chat:
 		self.sessions={}
 		self.users = {}
 		self.groups = {}
-		self.users['stu']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': '1', 'incoming' : {}, 'outgoing': {}, 'files': {}}
-		self.users['ubay']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': '1', 'incoming': {}, 'outgoing': {}, 'files': {}}
-		self.users['sei']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': '1','incoming': {}, 'outgoing': {}, 'files': {}}
+		self.users['stu']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': '1', 'incoming' : {}, 'outgoing': {}, 'files': {},'file_keys': {}}
+		self.users['ubay']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': '1', 'incoming': {}, 'outgoing': {}, 'files': {},'file_keys': {}}
+		self.users['sei']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': '1','incoming': {}, 'outgoing': {}, 'files': {},'file_keys': {}}
 		self.groups['group1']={'nama': 'Group 1','member': ['messi','henderson','lineker']}
 	def proses(self,data):
 		j=data.split(" ")
@@ -163,20 +163,20 @@ class Chat:
 		try :
 			try : 
 				s_to['files'][username_from][filename] = message
-				print(type(s_to['files'][username_from][filename]))
-				s_to['files'][username_from]['key'][filename] = key
+				# print(type(s_to['files'][username_from][filename]))
+				s_to['file_keys'][username_from][filename] = message = key
 			except KeyError:
 				s_to['files'][username_from] = {}
 				s_to['files'][username_from][filename] = message
-				print(type(s_to['files'][username_from][filename]))
-				s_to['files'][username_from]['key'][filename] = key
+				# print(type(s_to['files'][username_from][filename]))
+				s_to['file_keys'][username_from][filename] = message = key
 			try : 
 				s_fr['files'][username_dest][filename] = message
-				# s_fr['files'][username_dest][filename]['key'] = key
+				s_fr['file_keys'][username_dest][filename] = message = key
 			except KeyError:
 				s_fr['files'][username_dest] = {}
 				s_fr['files'][username_dest][filename] = message
-				# s_fr['files'][username_dest][filename]['key'] = key
+				s_fr['file_keys'][username_dest][filename] = key
 		except KeyError:
 			return {'status': 'ERROR', 'message': 'File Not Sent'}
 
