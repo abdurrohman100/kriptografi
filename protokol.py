@@ -11,9 +11,9 @@ class Chat:
 		self.sessions={}
 		self.users = {}
 		self.groups = {}
-		self.users['stu']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': 'surabaya', 'incoming' : {}, 'outgoing': {}, 'files': {}}
-		self.users['ubay']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': 'surabaya', 'incoming': {}, 'outgoing': {}, 'files': {}}
-		self.users['sei']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': 'surabaya','incoming': {}, 'outgoing': {}, 'files': {}}
+		self.users['stu']={ 'nama': 'Lionel Messi', 'negara': 'Argentina', 'password': '1', 'incoming' : {}, 'outgoing': {}, 'files': {}}
+		self.users['ubay']={ 'nama': 'Jordan Henderson', 'negara': 'Inggris', 'password': '1', 'incoming': {}, 'outgoing': {}, 'files': {}}
+		self.users['sei']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': '1','incoming': {}, 'outgoing': {}, 'files': {}}
 		self.groups['group1']={'nama': 'Group 1','member': ['messi','henderson','lineker']}
 	def proses(self,data):
 		j=data.split(" ")
@@ -51,14 +51,14 @@ class Chat:
 				sessionid = j[1].strip()
 				usernameto = j[2].strip()
 				filename = j[3].strip()
-				# key = j[4].strip()
+				key = j[4].strip()
 				message=""
-				for w in j[4:-1]:
+				for w in j[5:-1]:
 					message="{}{}" . format(message,w)
 				
 				usernamefrom = self.sessions[sessionid]['username']
-				logging.warning("SEND: session {} send file {} from {} to {}  with data {}" . format(sessionid, filename, usernamefrom, usernameto, key, message))
-				return self.send_file(sessionid,usernamefrom,usernameto,filename,message)
+				logging.warning("SEND: session {} send file {} from {} to {},with key {},  with data {}" . format(sessionid, filename, usernamefrom, usernameto, key, message))
+				return self.send_file(sessionid,usernamefrom,usernameto,filename,key,message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
 				logging.warning("FILES: session {}" . format(sessionid))
@@ -153,7 +153,7 @@ class Chat:
 				inqueue_receiver[group_to].put(message_in)
 		
 		return {'status': 'OK', 'message': 'Message Sent'}
-	def send_file(self, sessionid, username_from, username_dest, filename, message):
+	def send_file(self, sessionid, username_from, username_dest, filename, key, message):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_fr = self.get_user(username_from)
@@ -163,20 +163,20 @@ class Chat:
 		try :
 			try : 
 				s_to['files'][username_from][filename] = message
-				# s_to['files'][username_from][filename]['key'] = key
+				s_to['files'][username_from][filename]['key'] = key
 			except KeyError:
 				s_to['files'][username_from] = {}
 				s_to['files'][username_from][filename] = message
-				# s_to['files'][username_from][filename]['key'] = key
+				s_to['files'][username_from][filename]['key'] = key
 			try : 
 				s_fr['files'][username_dest][filename] = message
-				# s_fr['files'][username_dest][filename]['key'] = key
+				s_fr['files'][username_dest][filename]['key'] = key
 			except KeyError:
 				s_fr['files'][username_dest] = {}
 				s_fr['files'][username_dest][filename] = message
-				# s_fr['files'][username_dest][filename]['key'] = key
+				s_fr['files'][username_dest][filename]['key'] = key
 		except KeyError:
-			return {'status': 'NOOO', 'message': 'File NOt Sent'}
+			return {'status': 'ERROR', 'message': 'File Not Sent'}
 
 		return {'status': 'OK', 'message': 'File Sent'}
 	def send_group_file(self, sessionid, username_from, group_dest, filename, message):
