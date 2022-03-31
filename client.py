@@ -5,6 +5,8 @@ import os
 import json
 from DiffieHellman import DiffieHellman
 from aes import AESCipher
+from Crypto.Cipher import DES3
+from hashlib import md5
 
 # AESC = AESCipher("kijpakbas", True)
 
@@ -38,6 +40,11 @@ class ChatClient:
                 filename = j[2].strip()
                 pkey = j[3].strip()
                 return self.sendfile_aes(usernameto,filename,pkey)
+            elif (command=='send_3des'):
+                usernameto = j[1].strip()
+                filename = j[2].strip()
+                pkey = j[3].strip()
+                return self.sendfile_3des(usernameto,filename,pkey)
             elif (command=='my_file'):
                 return self.myfile()
             elif (command=='download_aes'):
@@ -45,6 +52,11 @@ class ChatClient:
                 filename = j[2].strip()
                 pkey = j[3].strip()
                 return self.downloadfile_aes(username, filename,pkey)
+            elif (command=='download_3des'):
+                username = j[1].strip()
+                filename = j[2].strip()
+                pkey = j[3].strip()
+                return self.downloadfile_3des(username, filename,pkey)
             elif (command=='sendkey'):
                 key = j[1].strip()
                 return self.sendkey(key)
@@ -102,6 +114,31 @@ class ChatClient:
             return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    
+    def sendfile_3des(self, usernameto, filename,key):
+        if(self.tokenid==""):
+            return "Error, not authorized"
+        try :
+            file = open(filename, "rb")
+        except FileNotFoundError :
+            return "Error, {} file not found".format(filename)
+        # cipher2 = AESCipher("ini key1", True)
+        keyhash = md5(key.encode('ascii')).digest()
+        deskey = DES3.adjust_key_parity(keyhash)
+        enc = DES3.new(deskey, DES3.MODE_EAX,nonce=b'0')
+        buffer = file.read()
+        encrypted_buffer = enc.encrypt(buffer)
+        encrypted_file = open(filename+".enc", "wb")
+        encrypted_file.write(encrypted_buffer)
+        file.close()
+        encrypted_file.close()
+        buffer_string = base64.b64encode(encrypted_buffer).decode('utf-8')
+        message="send_file_3des {} {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename,key, buffer_string)
+        result = self.sendstring(message)
+        if result['status']=='OK':
+            return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def myfile(self):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -121,6 +158,23 @@ class ChatClient:
             cipher3 = AESCipher(key, True) 
             output_file = open(result['filename'], 'wb')
             decrypted_buffer = cipher3.decrypt_byte(base64.b64decode(result['data']))
+            output_file.write(decrypted_buffer)
+            output_file.close()
+            return {'status' : 'OK', 'message':'file {} downloaded' . format(filename)}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    def downloadfile_3des(self, username, filename,key):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="download_file_3des {} {} {} \r\n" . format(self.tokenid, username, filename,key)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            # cipher3 = AESCipher("ini key1", True) 
+            keyhash = md5(key.encode('ascii')).digest()
+            deskey = DES3.adjust_key_parity(keyhash)
+            dec = DES3.new(deskey, DES3.MODE_EAX,nonce=b'0')
+            output_file = open(result['filename'], 'wb')
+            decrypted_buffer = dec.decrypt(base64.b64decode(result['data']))
             output_file.write(decrypted_buffer)
             output_file.close()
             return {'status' : 'OK', 'message':'file {} downloaded' . format(filename)}

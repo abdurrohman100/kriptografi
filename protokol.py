@@ -44,6 +44,17 @@ class Chat:
 				usernamefrom = self.sessions[sessionid]['username']
 				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
 				return self.send_file_aes(sessionid,usernamefrom,usernameto,filename,key,message)
+			elif (command=='send_file_3des'):
+				sessionid = j[1].strip()
+				usernameto = j[2].strip()
+				filename = j[3].strip()
+				key = j[4].strip()
+				message=""
+				for w in j[5:-1]:
+					message="{}{}" . format(message,w)
+				usernamefrom = self.sessions[sessionid]['username']
+				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
+				return self.send_file_3des(sessionid,usernamefrom,usernameto,filename,key,message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
 				logging.warning("FILES: session {}" . format(sessionid))
@@ -57,6 +68,14 @@ class Chat:
 				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
 				username = self.sessions[sessionid]['username']
 				return self.download_file_aes(sessionid, username, usernameto, filename,key)
+			elif (command=='download_file_3des'):
+				sessionid = j[1].strip()
+				usernameto = j[2].strip()
+				filename = j[3].strip()
+				key = j[4].strip()
+				logging.warning("DOWNLOAD: session {} file {}" . format(sessionid, filename))
+				username = self.sessions[sessionid]['username']
+				return self.download_file_3des(sessionid, username, usernameto, filename,key)
 			elif (command=='sendkey'):
 				sessionid = j[1].strip()
 				key = j[2].strip()
@@ -141,6 +160,34 @@ class Chat:
 			s_fr['files'][username_dest][filename] = message
 
 		return {'status': 'OK', 'message': 'File Sent'}
+	
+	def send_file_3des(self, sessionid, username_from, username_dest, filename,key, message):
+		if (sessionid not in self.sessions):
+			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
+		s_fr = self.get_user(username_from)
+		s_to = self.get_user(username_dest)
+		if (s_fr==False or s_to==False):
+			return {'status': 'ERROR', 'message': 'User Tidak Ditemukan'}
+
+		try : 
+			s_to['passwd'][username_from][filename] = key
+		except KeyError:
+			s_to['passwd'][username_from] = {}
+			s_to['passwd'][username_from][filename] = key
+		
+		try : 
+			s_to['files'][username_from][filename] = message
+		except KeyError:
+			s_to['files'][username_from] = {}
+			s_to['files'][username_from][filename] = message
+
+		try : 
+			s_fr['files'][username_dest][filename] = message
+		except KeyError:
+			s_fr['files'][username_dest] = {}
+			s_fr['files'][username_dest][filename] = message
+
+		return {'status': 'OK', 'message': 'File Sent'}
 	def my_file(self, sessionid, username):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
@@ -153,6 +200,18 @@ class Chat:
 				msgs[user].append(file)
 		return {'status': 'OK', 'messages': msgs}
 	def download_file_aes(self, sessionid, username, usernameto, filename,key):
+		if (sessionid not in self.sessions):
+			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
+		s_usr = self.get_user(username)
+		if(usernameto not in s_usr['files']):
+			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
+		if filename not in s_usr['files'][usernameto]:
+			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
+		data = s_usr['files'][usernameto][filename]
+		gkey=s_usr['passwd'][usernameto][filename]
+		# if key==gkey:
+		return {'status': 'OK', 'messages': f'Downloaded {gkey}', 'filename':f'{filename}', 'data':f'{data}'}
+	def download_file_3des(self, sessionid, username, usernameto, filename,key):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
 		s_usr = self.get_user(username)
