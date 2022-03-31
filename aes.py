@@ -58,7 +58,8 @@ class AESCipher(object):
 
     def decrypt_byte(self, encrypted_byte):
         iv = encrypted_byte[:self.block_size]
-        # print(self.block_size)
+        print(self.block_size)
+        print(iv)
         if self.scratch :
             cipher = CBC(self.key, encrypted_byte[self.block_size:], iv)
             byte = cipher.decrypt()
