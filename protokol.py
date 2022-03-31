@@ -57,7 +57,7 @@ class Chat:
 					message="{}{}" . format(message,w)
 				
 				usernamefrom = self.sessions[sessionid]['username']
-				logging.warning("SEND: session {} send file {} from {} to {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, message))
+				logging.warning("SEND: session {} send file {} from {} to {} with key {} with data {}" . format(sessionid, filename, usernamefrom, usernameto, key, message))
 				return self.send_file(sessionid,usernamefrom,usernameto,filename,key,message)
 			elif (command=='my_file'):
 				sessionid = j[1].strip()
