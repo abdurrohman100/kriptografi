@@ -35,14 +35,16 @@ class ChatClient:
                 usernameto = j[1].strip()
                 filename = j[2].strip()
                 key = j[3].strip()
-                return self.sendfile_aes(usernameto,filename,key)
+                # return self.sendfile_aes(usernameto,filename,key)
+                return self.sendfile_aes2(usernameto,filename)
             elif (command=='my_file'):
                 return self.myfile()
             elif (command=='download_aes'):
                 username = j[1].strip()
                 filename = j[2].strip()
                 key = j[3].strip()
-                return self.downloadfile_aes(username, filename, key)
+                # return self.downloadfile_aes(username, filename, key)
+                return self.downloadfile_aes2(username, filename)
             elif (command=='download'):
                 username = j[1].strip()
                 filename = j[2].strip()
