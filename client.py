@@ -87,7 +87,7 @@ class ChatClient:
             return "Error, {} file not found".format(filename)
         buffer = file.read()
         # key="12345678"
-        cipher = AESCipher(str(key), True)
+        cipher = AESCipher(str(key), False)
         encrypted_buffer = cipher.encrypt_byte(buffer)
         encrypted_file = open(filename+".aes", "wb")
         encrypted_file.write(encrypted_buffer)
@@ -118,7 +118,7 @@ class ChatClient:
         result = self.sendstring(string)
         if result['status']=='OK':
             try:
-                cipher2 = AESCipher(str(key), True)
+                cipher2 = AESCipher(str(key), False)
                 output_file = open(result['filename'], 'wb')
                 decrypted_buffer = cipher2.decrypt_byte(base64.b64decode(result['data']))
                 output_file.write(decrypted_buffer)
