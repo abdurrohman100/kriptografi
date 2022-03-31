@@ -27,22 +27,17 @@ class AESCipher(object):
     def encrypt_byte(self, byte):
         byte = self.__pad_byte(byte)
         iv = Random.new().read(self.block_size)
-        # print(iv)
         if self.scratch :
             cipher = CBC(self.key, byte, iv)
             encrypted_byte = cipher.encrypt()
-            # return iv + encrypted_byte
         else :
             cipher = AES.new(self.key, AES.MODE_CBC, iv)
-            # cipher = AES.new(self.key, AES.MODE_CBC)
             encrypted_byte = cipher.encrypt(byte)
-            # return encrypted_byte
         return iv + encrypted_byte
 
     def decrypt(self, encrypted_text):
         encrypted_text = b64decode(encrypted_text)
         iv = encrypted_text[:self.block_size]
-        
         if self.scratch :
             cipher = CBC(self.key, encrypted_text[self.block_size:], iv)
             try:
@@ -61,8 +56,6 @@ class AESCipher(object):
 
     def decrypt_byte(self, encrypted_byte):
         iv = encrypted_byte[:self.block_size]
-        # print(self.block_size)
-        # print(iv)
         if self.scratch :
             cipher = CBC(self.key, encrypted_byte[self.block_size:], iv)
             byte = cipher.decrypt()
@@ -99,8 +92,28 @@ from time import time
 if __name__=="__main__":
     aes = AESCipher("abcdjklauiofjdjd", True)
     t0 = time()
-    enc = aes.encrypt_byte("aaaaaaasassssssssssaaaaaaaaaxybbbbbbbbbbbbbbb".encode())
+    enc = aes.encrypt_byte("aaaaaaaaaaaaaaaxybbbbbbbbbbbbbbb".encode())
     t1 = time()
     # print(b64encode(enc).decode())
     dec = aes.decrypt_byte(enc)
     t2 = time()
+
+    print('message')
+    message = 'aaaaaaaaaaaaaaaxybbbbbbbbbbbbbbb'
+    print(message)
+    print()
+
+    print('encryption took ' + str(t1-t0)+ ' seconds')
+    enc = aes.encrypt("aaaaaaaaaaaaaaaxybbbbbbbbbbbbbbb")
+    print(enc)
+    print()
+
+    print('decryption took ' + str(t2-t1) + ' seconds')
+    print(aes.decrypt(enc))
+    print()
+
+    # print(dec)
+    # print(aes.encrypt("a"))
+    # print(aes.decrypt(aes.encrypt("a")))
+
+
