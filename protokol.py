@@ -249,7 +249,11 @@ class Chat:
 			return {'status': 'ERROR', 'message': 'File Tidak Ditemukan'}
 		data = s_usr['files'][usernameto][filename]
 		gkey=s_usr['passwd'][usernameto][filename]
+		# if key==gkey:
 		return {'status': 'OK', 'messages': f'Downloaded {gkey}', 'filename':f'{filename}', 'data':f'{data}'}
+
+		
+
 
 	def get_inbox(self,username):
 		s_fr = self.get_user(username)
