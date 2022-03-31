@@ -164,12 +164,12 @@ class Chat:
 			try : 
 				s_to['files'][username_from][filename] = message
 				print(type(s_to['files'][username_from][filename]))
-				# s_to['files'][username_from][filename]['key'] = key
+				s_to['files'][username_from]['key'][filename] = key
 			except KeyError:
 				s_to['files'][username_from] = {}
 				s_to['files'][username_from][filename] = message
 				print(type(s_to['files'][username_from][filename]))
-				# s_to['files'][username_from][filename]['key'] = key
+				s_to['files'][username_from]['key'][filename] = key
 			try : 
 				s_fr['files'][username_dest][filename] = message
 				# s_fr['files'][username_dest][filename]['key'] = key
