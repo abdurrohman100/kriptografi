@@ -1,3 +1,4 @@
+# 3DES not used
 # import required module
 from Crypto.Cipher import DES3
 from hashlib import md5

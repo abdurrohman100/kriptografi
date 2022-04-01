@@ -11,10 +11,8 @@ class Chat:
 		self.sessions={}
 		self.users = {}
 		self.groups = {}
-		self.users['Stu']={ 'nama': 'Restu Agung P.', 'negara': 'Argentina', 'password': '1234abcd', 'incoming' : {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
-		self.users['Ubay']={ 'nama': 'M. Subhan', 'negara': 'Inggris', 'password': '1234abcd', 'incoming': {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
-		self.users['lineker']={'nama': 'Gary Lineker', 'negara': 'Inggris', 'password': 'surabaya','incoming': {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
-		self.groups['group1']={'nama': 'Group 1','member': ['messi','henderson','lineker']}
+		self.users['stu']={ 'nama': 'Restu Agung P.', 'negara': 'Argentina', 'password': '1234abcd', 'incoming' : {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
+		self.users['ubay']={ 'nama': 'M. Subhan', 'negara': 'Inggris', 'password': '1234abcd', 'incoming': {}, 'outgoing': {}, 'files': {}, 'passwd': {}}
 	def proses(self,data):
 		j=data.split(" ")
 		try:
@@ -105,10 +103,7 @@ class Chat:
 		if (username not in self.users):
 			return False
 		return self.users[username]
-	def get_group(self,group):
-		if(group not in self.groups):
-			return False
-		return self.groups[group]
+	
 	def send_message(self,sessionid,username_from,username_dest,message):
 		if (sessionid not in self.sessions):
 			return {'status': 'ERROR', 'message': 'Session Tidak Ditemukan'}
@@ -238,27 +233,17 @@ class Chat:
 			return {'status': 'OK', 'message': 'Key Ditemukan', 'key':self.users[username]['key']}
 
 
-if __name__=="__main__":
-	j = Chat()
-	sesi = j.proses("auth messi surabaya")
-	print(sesi)
-	#sesi = j.autentikasi_user('messi','surabaya')
-	#print sesi
-	tokenid = sesi['tokenid']
-	print(j.proses("send {} henderson hello gimana kabarnya son " . format(tokenid)))
-	print(j.proses("send {} messi hello gimana kabarnya mess " . format(tokenid)))
+# if __name__=="__main__":
+	# j = Chat()
+	# sesi = j.proses("auth messi surabaya")
+	# print(sesi)
+	# #sesi = j.autentikasi_user('messi','surabaya')
+	# #print sesi
+	# tokenid = sesi['tokenid']
+	# print(j.proses("send {} henderson hello gimana kabarnya son " . format(tokenid)))
+	# print(j.proses("send {} messi hello gimana kabarnya mess " . format(tokenid)))
 
-	#print j.send_message(tokenid,'messi','henderson','hello son')
-	#print j.send_message(tokenid,'henderson','messi','hello si')
-	#print j.send_message(tokenid,'lineker','messi','hello si dari lineker')
-
-
-	print("isi mailbox dari messi")
-	print(j.get_inbox('messi'))
-	print("isi mailbox dari henderson")
-	print(j.get_inbox('henderson'))
-
-
+	
 
 
 

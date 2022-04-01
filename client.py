@@ -199,17 +199,6 @@ class ChatClient:
             return {'status':'OK', 'key':result['key']}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
-    # def getAES(self, username):
-    #     if(username not in  AESDict):
-    #         result = self.getkey(username)
-    #         if result['status'] == 'OK':
-    #             diffieHelman.genKey(int(result['key']))
-    #             AESDict[username] = AESCipher(f'{diffieHelman.getKey()}', True)
-    #             return AESDict[username]
-    #         else :
-    #             return AESC
-    #     else :
-    #         return AESDict[username]
 if __name__=="__main__":
     cc = ChatClient()
     while True:

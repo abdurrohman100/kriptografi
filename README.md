@@ -4,7 +4,7 @@
 
 - Jalankan 2 client.py
 
-- Login dulu. Autentikasi untuk user bisa di hardcode di protokol.py username dari index set nya waktu inisiasi class
+- Login dahulu. Autentikasi untuk user bisa di temukan di protokol.py. Username didapat dari index set user pada waktu inisisasi kelas.
   - command : auth [username] [password]
     - Default username(case sensitive) : password
       - stu : 1234abcd
@@ -39,14 +39,4 @@
 - Download file dari client ubay
   - command : donwload_aes [username asal] [namafile] [keypharse untuk dekripsi]
     - contoh download_aes stu tes.txt 1234567890
-  - kalau keypharse salah hasilnya bakal unreadable
-
-
-
-Kalau mau liat command nya atau barang kali aku salah tulis bisa liat di client.py
-
-Kalau benerin kodingan 3des langusung di client.py aja ada fungsinya pake postfix 3des
-
-Kalau benerin kodingan aes langusung di dari aes.py sama di client.py
-
-Urusan trasnfer data semua ada diprotokol
+  - Jika keypharse salah hasilnya tetap terdownload namun kemungkinan besar menjadi unreadable file.
