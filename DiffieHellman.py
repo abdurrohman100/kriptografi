@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+	#!/usr/bin/env python
 """
 PyDHE - Diffie-Hellman Key Exchange in Python
 Copyright (C) 2015 by Mark Loiseau
@@ -189,25 +189,25 @@ if __name__=="__main__":
 	"""
 	Run an example Diffie-Hellman exchange
 	"""
-	a = DiffieHellman()
-	b = DiffieHellman()
+	a = DiffieHellman(3,5)
+	b = DiffieHellman(3,5)
 
-	print(a.publicKey)
-	print(b.publicKey)
+	# print(a.publicKey)
+	# print(b.publicKey)
 
 	a.genKey(b.publicKey)
 	b.genKey(a.publicKey)
 
-	#a.showParams()
-	#a.showResults()
-	#b.showParams()
-	#b.showResults()
+	a.showParams()
+	b.showParams()
+	a.showResults()
+	b.showResults()
 
 	if(a.getKey() == b.getKey()):
 		print("Shared keys match.")
-		print("Key:", hexlify(a.key))
-		print("Key:", hexlify(b.getKey()))
+		# print("Key:", hexlify(a.key))
+		# print("Key:", hexlify(b.getKey()))
 	else:
 		print("Shared secrets didn't match!")
-		print("Shared secret A: ", a.genSecret(b.publicKey))
-		print("Shared secret B: ", b.genSecret(a.publicKey))
+		# print("Shared secret A: ", a.genSecret(b.publicKey))
+		# print("Shared secret B: ", b.genSecret(a.publicKey))

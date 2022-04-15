@@ -4,6 +4,7 @@ import socket
 import os
 import json
 from DiffieHellman import DiffieHellman
+from ElGamal import *
 from aes import AESCipher
 from Crypto.Cipher import DES3
 from hashlib import md5
@@ -12,10 +13,13 @@ from hashlib import md5
 
 diffieHelman = DiffieHellman()
 
+
+
+
 # AESDict = {}
 
-# TARGET_IP = "127.0.0.1"
-TARGET_IP = "167.172.77.139"
+TARGET_IP = "127.0.0.1"
+# TARGET_IP = "167.172.77.139"
 TARGET_PORT = 8889
 
 # cipher = AESCipher("ini key", True)
@@ -27,6 +31,8 @@ class ChatClient:
         self.sock.connect(self.server_address)
         self.username=""
         self.tokenid=""
+        self.elpublic=PublicKey()
+        self.elprivate=PrivateKey()
     def proses(self,cmdline):
         j=cmdline.split(" ")
         try:
@@ -36,6 +42,10 @@ class ChatClient:
                 password=j[2].strip()
                 response = self.login(username,password)
                 return response
+            elif (command=='generate_elgamalKey'):
+                return self.sendkey_elgamal()
+            elif (command=='update_elgamalKey'):
+                return self.update_elgamal()
             elif (command=='send_aes'):
                 usernameto = j[1].strip()
                 filename = j[2].strip()
@@ -46,6 +56,10 @@ class ChatClient:
                 filename = j[2].strip()
                 pkey = j[3].strip()
                 return self.sendfile_3des(usernameto,filename,pkey)
+            elif (command=='send_elgamal'):
+                usernameto = j[1].strip()
+                filename = j[2].strip()
+                return self.sendfile_elgamal(usernameto,filename)
             elif (command=='my_file'):
                 return self.myfile()
             elif (command=='download_aes'):
@@ -58,6 +72,10 @@ class ChatClient:
                 filename = j[2].strip()
                 pkey = j[3].strip()
                 return self.downloadfile_3des(username, filename,pkey)
+            elif (command=='download_elgamal'):
+                username = j[1].strip()
+                filename = j[2].strip()
+                return self.downloadfile_elgamal(username, filename)
             elif (command=='sendkey'):
                 key = j[1].strip()
                 return self.sendkey(key)
@@ -89,10 +107,12 @@ class ChatClient:
         if result['status']=='OK':
             self.tokenid=result['tokenid']
             self.username = username
+            
             self.proses(f"sendkey {diffieHelman.publicKey}")
             return { 'status' : 'OK', 'message' : 'Logged In', 'username':username, 'token':self.tokenid}
         else:
             return { 'status' : 'ERROR', 'message' : 'Wrong Password or Username'}
+        
     def sendfile_aes(self, usernameto, filename,key):
         if(self.tokenid==""):
             return "Error, not authorized"
@@ -113,6 +133,50 @@ class ChatClient:
         result = self.sendstring(message)
         if result['status']=='OK':
             return {'status' : 'OK', 'message':'file sent to {}' . format(usernameto)}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    def getElgamalkey(self, username):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="getelgamalkey {} {} \r\n" . format(self.tokenid,username)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            return PublicKey(int(result['p']),int(result['g']),int(result['h']),256)
+            # return {'status':'OK', 'key':result['key']}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    
+    def getMyElgamalkey(self, username):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="getelgamalkey {} {} \r\n" . format(self.tokenid,username)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            return PublicKey(int(result['p']),int(result['g']),int(result['h']),256)
+            # return {'status':'OK', 'key':result['key']}
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    
+    def sendfile_elgamal(self, usernameto, filename):
+        if(self.tokenid==""):
+            return "Error, not authorized"
+        try :
+            file = open(filename, "r")
+        except FileNotFoundError :
+            return "Error, {} file not found".format(filename)
+        buffer = file.read()
+        publicKey= self.getElgamalkey(usernameto)
+
+        encrypted_buffer = encrypt(publicKey, buffer)
+        encrypted_file = open(filename+".egml", "w")
+        encrypted_file.write(encrypted_buffer)
+        file.close()
+        encrypted_file.close()
+        buffer_string = base64.b64encode(encrypted_buffer.encode('utf-8')).decode('utf-8')
+        message="send_file_elgamal {} {} {} {} \r\n" .format(self.tokenid, usernameto, filename, buffer_string)
+        result = self.sendstring(message)
+        if result['status']=='OK':
+            return {'status' : 'OK', 'message':'file sent to {} with P : {}' . format(usernameto,publicKey.p)}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     
@@ -148,6 +212,23 @@ class ChatClient:
         if result['status']=='OK':
             return "{}" . format(json.dumps(result['messages']))
         else:   
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    
+    def downloadfile_elgamal(self, username, filename):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        if self.elprivate.x==0:
+            return "Missing Key"
+        string="download_file_elgamal {} {} {} \r\n" . format(self.tokenid, username, filename)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            output_file = open(result['filename'], 'w')
+            
+            decrypted_buffer = decrypt(self.elprivate, base64.b64decode(result['data']))
+            output_file.write(decrypted_buffer)
+            output_file.close()
+            return {'status' : 'OK', 'message':'file {} P: {} downloaded' . format(filename,self.elprivate.p)}
+        else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
     def downloadfile_aes(self, username, filename,key):
         if (self.tokenid==""):
@@ -191,6 +272,35 @@ class ChatClient:
             return "{}" . format(json.dumps(result['messages']))
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    def update_elgamal(self):
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        string="update_elgamal {}\r\n" . format(self.tokenid)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            if result['p']!=0:
+                elgamalPublicKey=PublicKey(result['p'],result['g'],result['h'],256)
+                elgamalPrivateKey=PrivateKey(result['p'],result['g'],result['x'],256)
+                return {'status':'OK', 'message':'Key Fetched from Server {} {} {} {}'. format(elgamalPrivateKey.p,elgamalPrivateKey.g,elgamalPrivateKey.x)}
+            else:
+                return {'status':'ERROR', 'message':'Error Key from Server is 0'}
+
+    def sendkey_elgamal(self):
+        
+        if (self.tokenid==""):
+            return "Error, not authorized"
+        key=generate_keys();
+        self.elpublic=key['publicKey']
+        self.elprivate=key['privateKey']
+
+        string="sendelgamalkey {} {} {} {} {}\r\n" . format(self.tokenid,self.elpublic.p,self.elpublic.g,self.elpublic.h, self.elprivate.x)
+        result = self.sendstring(string)
+        if result['status']=='OK':
+            return "{}" . format(json.dumps(result['messages']))
+        else:
+            return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+       
+        
     def getkey(self, username):
         if (self.tokenid==""):
             return "Error, not authorized"
@@ -200,6 +310,8 @@ class ChatClient:
             return {'status':'OK', 'key':result['key']}
         else:
             return {'status':'ERROR', 'message':'Error, {}' . format(result['message'])}
+    
+   
 if __name__=="__main__":
     cc = ChatClient()
     while True:
