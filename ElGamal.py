@@ -8,16 +8,12 @@ class PrivateKey(object):
 		self.g = int(g)
 		self.x = int(x)
 		self.iNumBits = iNumBits
-		# self.privateKey=str(p)+" "+str(g)+" "+str(x)
-
 class PublicKey(object):
 	def __init__(self, p=None, g=None, h=None, iNumBits=0):
 		self.p = p
 		self.g = g
 		self.h = h
 		self.iNumBits = iNumBits
-		# self.publicKey=str(p)+" "+str(g)+" "+str(h)
-
 def gcd( a, b ):
 		while b != 0:
 			c = a % b
@@ -30,7 +26,6 @@ def modexp( base, exp, modulus ):
 		return pow(base, exp, modulus)
 
 def SolovayStrassenPrimeTest( num, iConfidence ):
-		#ensure confidence of t
 		for i in range(iConfidence):
 				#choose random a between 1 and n-2
 				a = random.randint( 1, num-1 )
@@ -80,31 +75,23 @@ def jacobi( a, n ):
 						return jacobi(n, a )
 
 
-#finds a primitive root for prime p
-#this function was implemented from the algorithm described here:
+#Primitive root dari p
 #http://modular.math.washington.edu/edu/2007/spring/ent/ent-html/node31.html
 def find_primitive_root( p ):
 		if p == 2:
 				return 1
-		#the prime divisors of p-1 are 2 and (p-1)/2 because
-		#p = 2x + 1 where x is a prime
 		p1 = 2
 		p2 = (p-1) // p1
 
-		#test random g's until one is found that is a primitive root mod p
 		while( 1 ):
 				g = random.randint( 2, p-1 )
-				#g is a primitive root if for all prime factors of p-1, p[i]
-				#g^((p-1)/p[i]) (mod p) is not congruent to 1
 				if not (modexp( g, (p-1)//p1, p ) == 1):
 						if not modexp( g, (p-1)//p2, p ) == 1:
 								return g
 
-#find n bit prime
 def find_prime(iNumBits, iConfidence):
 		#keep testing until one is found
 		while(1):
-				#generate potential prime randomly
 				p = random.randint( 2**(iNumBits-2), 2**(iNumBits-1) )
 				#make sure it is odd
 				while( p % 2 == 0 ):
@@ -115,9 +102,6 @@ def find_prime(iNumBits, iConfidence):
 						p = random.randint( 2**(iNumBits-2), 2**(iNumBits-1) )
 						while( p % 2 == 0 ):
 								p = random.randint(2**(iNumBits-2), 2**(iNumBits-1))
-
-				#if p is prime compute p = 2*p + 1
-				#if p is prime, we have succeeded; else, start over
 				p = p * 2 + 1
 				if SolovayStrassenPrimeTest(p, iConfidence):
 						return p
@@ -126,18 +110,10 @@ def find_prime(iNumBits, iConfidence):
 def encode(sPlaintext, iNumBits):
 		byte_array = bytearray(sPlaintext, 'utf-16')
 
-		#z is the array of integers mod p
 		z = []
-
-		#each encoded integer will be a linear combination of k message bytes
-		#k must be the number of bits in the prime divided by 8 because each
-		#message byte is 8 bits long
 		k = iNumBits//8
 
-		#j marks the jth encoded integer
-		#j will start at 0 but make it -k because j will be incremented during first iteration
 		j = -1 * k
-		#num is the summation of the message bytes
 		num = 0
 		#i iterates through byte array
 		for i in range( len(byte_array) ):
@@ -149,61 +125,26 @@ def encode(sPlaintext, iNumBits):
 				#add the byte multiplied by 2 raised to a multiple of 8
 				z[j//k] += byte_array[i]*(2**(8*(i%k)))
 
-		#example
-				#if n = 24, k = n / 8 = 3
-				#z[0] = (summation from i = 0 to i = k)m[i]*(2^(8*i))
-				#where m[i] is the ith message byte
-
-		#return array of encoded integers
+	
 		return z
 
 #decodes integers to the original message bytes
 def decode(aiPlaintext, iNumBits):
-		#bytes array will hold the decoded original message bytes
 		bytes_array = []
 
-		#same deal as in the encode function.
-		#each encoded integer is a linear combination of k message bytes
-		#k must be the number of bits in the prime divided by 8 because each
-		#message byte is 8 bits long
 		k = iNumBits//8
-
-		#num is an integer in list aiPlaintext
 		for num in aiPlaintext:
-				#get the k message bytes from the integer, i counts from 0 to k-1
 				for i in range(k):
-						#temporary integer
 						temp = num
-						#j goes from i+1 to k-1
 						for j in range(i+1, k):
-								#get remainder from dividing integer by 2^(8*j)
 								temp = temp % (2**(8*j))
-						#message byte representing a letter is equal to temp divided by 2^(8*i)
 						letter = temp // (2**(8*i))
-						#add the message byte letter to the byte array
 						bytes_array.append(letter)
-						#subtract the letter multiplied by the power of two from num so
-						#so the next message byte can be found
 						num = num - (letter*(2**(8*i)))
-
-		#example
-		#if "You" were encoded.
-		#Letter        #ASCII
-		#Y              89
-		#o              111
-		#u              117
-		#if the encoded integer is 7696217 and k = 3
-		#m[0] = 7696217 % 256 % 65536 / (2^(8*0)) = 89 = 'Y'
-		#7696217 - (89 * (2^(8*0))) = 7696128
-		#m[1] = 7696128 % 65536 / (2^(8*1)) = 111 = 'o'
-		#7696128 - (111 * (2^(8*1))) = 7667712
-		#m[2] = 7667712 / (2^(8*2)) = 117 = 'u'
-
 		decodedText = bytearray(b for b in bytes_array).decode('utf-16')
 
 		return decodedText
 
-#generates public key K1 (p, g, h) and private key K2 (p, g, x)
 def generate_keys(iNumBits=256, iConfidence=32):
 		#p is the prime
 		#g is the primitve root
@@ -220,32 +161,14 @@ def generate_keys(iNumBits=256, iConfidence=32):
 
 		return {'privateKey': privateKey, 'publicKey': publicKey}
 
-def generate_priv_keys(p,g,h,iNumBits=256, iConfidence=32):
-		#p is the prime
-		#g is the primitve root
-		#x is random in (0, p-1) inclusive
-		#h = g ^ x mod p
-		p = find_prime(iNumBits, iConfidence)
-		g = find_primitive_root(p)
-		g = modexp( g, 2, p )
-		x = random.randint( 1, (p - 1) // 2 )
-		h = modexp( g, x, p )
 
-		publicKey = PublicKey(p, g, h, iNumBits)
-		privateKey = PrivateKey(p, g, x, iNumBits)
-
-		return {'privateKey': privateKey, 'publicKey': publicKey}
-
-
-#encrypts a string sPlaintext using the public key k
 def encrypt(key, sPlaintext):
 		z = encode(sPlaintext, key.iNumBits)
 
-	#cipher_pairs list will hold pairs (c, d) corresponding to each integer in z
+	#cipher_pairs (c, d
 		cipher_pairs = []
-		#i is an integer in z
 		for i in z:
-				#pick random y from (0, p-1) inclusive
+				#y ->> (0, p-1)
 				y = random.randint( 0, int(key.p) )
 				#c = g^y mod p
 				c = modexp( key.g, y, key.p )

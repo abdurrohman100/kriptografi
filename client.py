@@ -9,8 +9,6 @@ from aes import AESCipher
 from Crypto.Cipher import DES3
 from hashlib import md5
 
-# AESC = AESCipher("kijpakbas", True)
-
 diffieHelman = DiffieHellman()
 
 
