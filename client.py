@@ -16,8 +16,8 @@ diffieHelman = DiffieHellman()
 
 # AESDict = {}
 
-TARGET_IP = "127.0.0.1"
-# TARGET_IP = "167.172.77.139"
+# TARGET_IP = "127.0.0.1"
+TARGET_IP = "134.209.102.40"
 TARGET_PORT = 8889
 
 # cipher = AESCipher("ini key", True)

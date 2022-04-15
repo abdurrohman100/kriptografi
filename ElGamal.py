@@ -183,10 +183,8 @@ def encrypt(key, sPlaintext):
 	
 		return encryptedStr
 
-#performs decryption on the cipher pairs found in Cipher using
-#prive key K2 and writes the decrypted values to file Plaintext
+
 def decrypt(key, cipher):
-		#decrpyts each pair and adds the decrypted integer to list of plaintext integers
 		plaintext = []
 
 		cipherArray = cipher.split()
